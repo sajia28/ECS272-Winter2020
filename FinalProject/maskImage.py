@@ -115,7 +115,7 @@ def maskImage(source,color_dictionary,price_range,weight_range,view):
 
             # show the output image
     cv2.imshow("Output", clone)
-    cv2.imwrite("opimg.jpg",clone)
+    cv2.imwrite("opimg"+view+".jpg",clone)
 
 def findProportion(scaleVals,objVal):
     prop = (objVal-float(scaleVals.min()))/(float(scaleVals.max())-float(scaleVals.min()))
@@ -128,4 +128,4 @@ def makeColor(color,roi,view,proportion):
 cd = {"furniture":(140,33,255),"electronics":(100,100,200)}
 pr = {"tv":(300,1200),"couch":(60,800),"chair":(8,30)}
 wt = {"tv":(8,60),"couch":(25,500),"chair":(9,70)}
-maskImage("images/example_04.jpeg",cd,pr,wt,'price')
+maskImage("images/example_04.jpeg",cd,pr,wt,'weight')
