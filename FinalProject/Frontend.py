@@ -171,7 +171,6 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.analysis_category_tree = QtWidgets.QTreeWidget()
 		self.analysis_image = QtWidgets.QLabel()
 		self.view_widget = pg.GraphicsLayoutWidget()
-		pg.setConfigOption('foreground', 'w')
 		self.bar_chart = bar_chart()
 		analysis_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
 		self.analysis_image.setPixmap(analysis_pixmap.scaled(480, 360))

@@ -9,6 +9,9 @@ import csv
 import statistics
 import numpy as np
 
+pg.setConfigOption('background', 'w')
+pg.setConfigOption('foreground', 'k')
+
 relative_path = os.path.join('.', 'project_dataset.csv')
 dataset = pandas.read_csv(relative_path)
 
@@ -33,16 +36,17 @@ class scatter_plot_histogram:
             size_list.append(freqs[index] * 10)
 
         # creates the scatter plot
-        self.plot_points = pg.ScatterPlotItem(avg_weight_list, avg_price_list, size=size_list, pen=pg.mkPen(width=1, color=(0, 0, 0)),
-                                                 data=names, brush=pg.mkBrush(0, 0, 255, 120))
+        self.plot_points = pg.ScatterPlotItem(avg_weight_list, avg_price_list, size=size_list,
+                                              pen=pg.mkPen(width=1, color=(0, 0, 0)), data=names,
+                                              brush=pg.mkBrush(0, 0, 220, 120))
         widget1.addItem(self.plot_points)
         widget1.setLabel('left', 'Average Price (USD)')
         widget1.setLabel('bottom', 'Average Weight (Kg)')
-        widget1.setTitle('Price Vs Wgt Scatter Plot')
+        widget1.setTitle('Price Vs Weight Scatter Plot for Unique Items')
         self.widget1 = widget1
 
         # creates the scatter plot's tooltip
-        self.tooltip = pg.TextItem(text='', color=(176, 23, 31), anchor=(0, 1), border='w', fill='w')
+        self.tooltip = pg.TextItem(text='', color=(176, 23, 31), anchor=(0, 1), border='k', fill='w')
         self.tooltip.hide()
         widget1.addItem(self.tooltip)
 
@@ -57,7 +61,8 @@ class scatter_plot_histogram:
 
         histogram_y, histogram_x = np.histogram(histogram_subset['price'].tolist())
 
-        self.histogram = pg.PlotCurveItem(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 255, 80))
+        self.histogram = pg.PlotCurveItem(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 220, 120),
+                                          pen='k')
         widget2.addItem(self.histogram)
         widget2.setLabel('left', '# of Occurrences')
         widget2.setLabel('bottom', 'Price (USD)')
@@ -68,7 +73,7 @@ class scatter_plot_histogram:
         histogram_subset = dataset.loc[dataset['name'] == name]
 
         histogram_y, histogram_x = np.histogram(histogram_subset['price'].tolist())
-        self.histogram.setData(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 255, 80))
+        self.histogram.setData(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 220, 120), pen='k')
         self.widget2.setTitle(name.capitalize() + ' Price Histogram')
 
     def onMove(self, pos):
@@ -81,25 +86,38 @@ class scatter_plot_histogram:
 
             # highlights the point that was hovered over and un-highlights the previous point
             if self.selected_point is not None and self.selected_point is not point:
-                self.selected_point.setBrush(0, 0, 255, 80)
+                self.selected_point.setBrush(0, 0, 220, 120)
             self.selected_point = point
-            self.selected_point.setBrush(100, 100, 255, 80)
+            self.selected_point.setBrush(100, 220, 100, 120)
 
             # updates and shows the tooltip
             tooltip_text = 'name: ' + point.data() + '\navg price: $' + str(point.pos()[1]) + \
-                           '\navg wgt: ' + str(point.pos()[0]) + ' Kg'
+                           '\navg wgt: ' + str(point.pos()[0]) + ' Kg' + '\nitem count: ' + str(int(point.size() / 10))
             self.tooltip.setText(tooltip_text)
 
-            # gets the mouse position and the plot's max x an y values
+            # gets the mouse position and the plot's min/max x an y values
+            x_min = self.widget1.getAxis('bottom').range[0]
+            y_min = self.widget1.getAxis('left').range[0]
             x_max = self.widget1.getAxis('bottom').range[1]
             y_max = self.widget1.getAxis('left').range[1]
             x_pos = point.pos()[0]
             y_pos = point.pos()[1]
 
-            # if the mouse is close to the right or left of the plot's edge
+            # if the mouse is closer to the top right edge of the plot
             # set the anchor to the tooltip's top right
-            if (3 * x_max / 4) < x_pos or (3 * y_max / 4) < y_pos:
+            if (0.5 * (x_max - x_min)) < (x_pos - x_min) and (0.5 * (y_max - y_min)) < (y_pos - y_min):
                 self.tooltip.setAnchor((1, 0))
+
+            # if the mouse is closer to the top left edge of the plot
+            # set the anchor to the tooltip's top left
+            elif (0.5 * (y_max - y_min)) < (y_pos - y_min):
+                self.tooltip.setAnchor((0, 0))
+
+            # if the mouse is closer to the bottom right edge of the plot
+            # set the anchor to the tooltip's bottom right
+            elif (0.5 * (x_max - x_min)) < (x_pos - x_min):
+                self.tooltip.setAnchor((1, 1))
+
             # else, set the anchor to the tooltip's bottom left
             else:
                 self.tooltip.setAnchor((0, 1))
@@ -115,7 +133,7 @@ class scatter_plot_histogram:
 
             # un-highlights the point that was hovered over
             if self.selected_point is not None:
-                self.selected_point.setBrush(0, 0, 255, 80)
+                self.selected_point.setBrush(0, 0, 220, 120)
                 self.selected_point = None
 
     def onClick(self, _, points_list):
