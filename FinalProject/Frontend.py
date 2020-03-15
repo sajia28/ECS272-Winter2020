@@ -229,6 +229,7 @@ class MainWindow(QtWidgets.QMainWindow):
 	def connect_vis_widgets(self):
 		self.vis_combobox.currentIndexChanged.connect(self.change_vis)
 		self.analysis_category_tree.itemClicked.connect(self.change_vis)
+		self.reset_visualization_button.clicked.connect(self.change_vis)
 
 	def connect_view_widgets(self):
 		self.next_view_button.clicked.connect(self.next_view_picture)
@@ -245,7 +246,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.pictures.append(raw_pixmap)
 			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
 		# Mask Image
-		self.items += maskImage(path)
+		pred_conf = self.prediction_confidence_slider.value()
+		masking_conf = self.masking_confidence_slider.value()
+		self.items += maskImage(path, pred_conf, masking_conf)
 		cat_pixmap = QtGui.QPixmap('cat.jpg')
 		price_pixmap = QtGui.QPixmap('price.jpg')
 		weight_pixmap = QtGui.QPixmap('weight.jpg')
@@ -311,7 +314,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			# save picture
 			picture.save('inter.jpg')
 			# mask each image using new parameters
-			self.items += maskImage('inter.jpg', labels=supported_labels, price_range=(lowend, highend))
+			pred_conf = self.prediction_confidence_slider.value()
+			masking_conf = self.masking_confidence_slider.value()
+			self.items += maskImage('inter.jpg', pred_conf, masking_conf, labels=supported_labels, price_range=(lowend, highend))
 			cat_pixmap = QtGui.QPixmap('cat.jpg')
 			price_pixmap = QtGui.QPixmap('price.jpg')
 			weight_pixmap = QtGui.QPixmap('weight.jpg')
