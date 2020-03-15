@@ -171,6 +171,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Populate
 		self.populate_tree_widget(self.analysis_category_tree)
 		self.analysis_category_tree.setFixedWidth(250)
+		self.w1 = self.view_widget.addPlot(0, 0)
+		self.w2 = self.view_widget.addPlot(1, 0)
 		# Add analysis widgets to grid
 		self.analysis_grid.addWidget(self.analysis_title, 0, 0)
 		self.analysis_grid.addWidget(self.analysis_image, 1, 0, 2, 3)
@@ -267,8 +269,6 @@ class MainWindow(QtWidgets.QMainWindow):
 				item_frequency[individual_items.index(item)] += 1
 		if str(self.vis_combobox.currentText()) == 'Value-Weight Scatterplot':
 			self.analysis_image.hide()
-			self.w1 = self.view_widget.addPlot(0, 0)
-			self.w2 = self.view_widget.addPlot(1, 0)
 			individual_items = []
 			item_frequency = []
 			for item in self.items:
@@ -277,11 +277,8 @@ class MainWindow(QtWidgets.QMainWindow):
 					item_frequency.append(1)
 				else:
 					item_frequency[individual_items.index(item)] += 1
-			self.test = scatter_plot_histogram(self.w1, self.w2, ['bed', 'couch'], [1, 2])
 			self.bar_chart.hide()
 			self.view_widget.show()
-			self.w1 = self.view_widget.addPlot()
-			self.w2 = self.view_widget.addPlot()
 			self.scatter = scatter_plot_histogram(self.w1, self.w2, individual_items, item_frequency)
 		if str(self.vis_combobox.currentText()) == 'Value Barchart':
 			self.analysis_image.hide()
