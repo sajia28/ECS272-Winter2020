@@ -245,6 +245,9 @@ class MainWindow(QtWidgets.QMainWindow):
 			raw_pixmap = QtGui.QPixmap(path)
 			self.pictures.append(raw_pixmap)
 			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
+		else:
+			print('Error: no image was provided')
+			return
 		# Mask Image
 		pred_conf = self.prediction_confidence_slider.value()
 		masking_conf = self.masking_confidence_slider.value()

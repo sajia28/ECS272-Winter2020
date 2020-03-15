@@ -27,8 +27,8 @@ def maskImage(source, prediction_confidence, masking_confidence, price_range = (
     # CSV Stuff
     price_dict = {}
     weight_dict = {}
-    with open('project_dataset.csv', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='|', encoding='utf8')
+    with open('project_dataset.csv', newline='', encoding='utf8') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         next(reader)
         for row in reader:
             if float(row[2]) >= price_range[0] and float(row[2]) <= price_range[1]:
