@@ -2,6 +2,10 @@
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 from PyQt5.QtChart import QChart, QChartView, QValueAxis, QBarCategoryAxis, QBarSet, QBarSeries
 from PyQt5.Qt import Qt
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5 import QtCore, QtWidgets
+import plotly.offline as po
+import plotly.graph_objs as go
 import pyqtgraph as pg
 import pandas
 import os
@@ -296,18 +300,95 @@ class bar_chart(QtWidgets.QWidget):
         point = points_list[0]
         print (point)
 
+class alluvial_diagram:
+    def __init__(self,parent=None):
+        self.paid_disp_df = dataset.copy()
+        self.free_disp_df = dataset.copy()
+        self.paid_disp_df = self.paid_disp_df.groupby(['category','paid_disposal']).count()
+        self.paid_disp_df.reset_index(inplace=True)
+        self.free_disp_df = self.free_disp_df.groupby(['category','free_disposal']).count()
+        self.free_disp_df.reset_index(inplace=True)
 
+    def get_flow_values(self,disposal_list,flag):
+        flow_list = []
+        if(flag == 'p'):
+            data = self.paid_disp_df
+            col = 'paid_disposal'
+        else:
+            data = self.free_disp_df
+            col = 'free_disposal'
+        for method in disposal_list:
+            method = [method]
+            #print(method)
+            data[method[0]] = data[col].str.contains(method[0])
+            data = data.groupby(['category',method[0]]).sum()
+            data.reset_index(inplace=True)
+            data = data[data[method[0]] == True]
+            flow_list.extend(data['name'].tolist())
+            #print(flow_list)
+        return flow_list
+
+    def make_alluvial(self,categories,free_disp_methods,paid_disp_methods):
+        #sankey_df['cc'] = sankey_df['paid_disposal'].str.contains("curbside collection")
+        #sankey_df = sankey_df.groupby(['category','cc']).sum()
+        #sankey_df.reset_index(inplace=True)
+        #sankey_df = sankey_df[sankey_df.cc == True]
+        #print(sankey_df)
+        flow_values_list = self.get_flow_values(free_disp_methods,"f")
+        flow_values_list.extend(self.get_flow_values(paid_disp_methods,"p"))
+
+        source_list = list(np.tile(np.arange(0,len(categories),1),len(free_disp_methods)+len(paid_disp_methods)))
+        print(source_list)
+        print(flow_values_list)
+        target_list = [*range(len(categories),len(categories)+len(free_disp_methods)+len(paid_disp_methods),1)]
+        target_list = [ele for ele in target_list for i in range(len(categories))]
+        print(target_list)
+        labels = categories.copy()
+        labels.extend(free_disp_methods)
+        labels.extend(paid_disp_methods)
+        print(labels)
+        colors = ['blue']*len(categories)
+        colors.extend(['pink']*len(free_disp_methods))
+        colors.extend(['orange']*len(paid_disp_methods))
+        print(colors)
+        fig = go.Figure(data=[go.Sankey(
+        node=dict(
+            pad=15,
+            thickness=15,
+            line=dict(color='black',width=0.5),
+            label=labels,
+            color=colors
+        ),
+        link=dict(
+            source=source_list,
+            target=target_list,
+            value=flow_values_list,
+        ))])
+        fig.update_layout(showlegend=True)
+        raw_html = '<html><head><meta charset="utf-8" />'
+        raw_html += '<script src="https://cdn.plot.ly/plotly-latest.min.js"></script></head>'
+        raw_html += '<body>'
+        raw_html += po.plot(fig, include_plotlyjs=False, output_type='div')
+        raw_html += '</body></html>'
+
+        fig_view = QWebEngineView()
+        # setHtml has a 2MB size limit, need to switch to setUrl on tmp file
+        # for large figures.
+        fig_view.setHtml(raw_html)
+        fig_view.show()
+        fig_view.raise_()
+        return fig_view
 
 # Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
     # for debugging purposes
     app = QtGui.QApplication([])
-    mw = QtGui.QMainWindow()
-    mw.resize(900, 600)
-    mw.resize(900, 600)
-    mw.show()
-    test = bar_chart()
-    test.populate(['couch', 'bed', 'laptop', 'baseball bat'], [1, 1, 1, 2], value=False)
-    mw.setCentralWidget(test)
+    #mw = QtGui.QMainWindow()
+    #mw.resize(900, 600)
+    #mw.resize(900, 600)
+    #mw.show()
+    test = alluvial_diagram()
+    fig_view = test.make_alluvial(['electronics','furniture','sports'],['donation'],['curbside collection'])
+    #mw.setCentralWidget(test)
 
     app.exec_()  # Start QApplication event loop ***
