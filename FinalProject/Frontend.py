@@ -3,9 +3,12 @@ import webbrowser
 import os
 import time
 import random
+import math
 import string
-from PyQt5 import QtCore, QtWidgets, QtGui
+from pyqtgraph.Qt import QtWidgets, QtGui, QtCore
+import pyqtgraph as pg
 from AdditionalWidgets import FileEntry, RangeSlider
+from visualizations import scatter_plot_histogram, bar_chart
 from shutil import copyfile
 from maskImage import maskImage
 
@@ -26,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 		self.grid = QtWidgets.QGridLayout()
 
+		self.items = []
 		self.pictures = []
 		self.processed_pictures = {'category': [], 'price': [], 'weight': []}
 
@@ -61,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.grid.addWidget(self.tab_widget, 0, 0)
 
 	def createSetupWindow(self):
+		self.setup_pic_num = 1
 		# Setup window grid and frame
 		self.setup_grid = QtWidgets.QGridLayout()
 		self.setup_frame = QtWidgets.QFrame(self.cw)
@@ -74,8 +79,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.raw_image = QtWidgets.QLabel()
 		raw_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
 		self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
-		self.setup_prev_button = QtWidgets.QPushButton(">>")
-		self.setup_next_button = QtWidgets.QPushButton("<<")
+		self.setup_prev_button = QtWidgets.QPushButton("<<")
+		self.setup_next_button = QtWidgets.QPushButton(">>")
 		self.advanced_label = QtWidgets.QLabel("Advanced")
 		self.advanced_label.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
 		self.prediction_confidence_label = QtWidgets.QLabel("Prediction Confidence")
@@ -94,8 +99,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.setup_grid.addWidget(self.path_entry, 1, 0)
 		self.setup_grid.addWidget(self.upload_button, 2, 0)
 		self.setup_grid.addWidget(self.raw_image, 1, 1, 2, 2)
-		self.setup_grid.addWidget(self.setup_next_button, 3, 1)
-		self.setup_grid.addWidget(self.setup_prev_button, 3, 2)
+		self.setup_grid.addWidget(self.setup_next_button, 3, 2)
+		self.setup_grid.addWidget(self.setup_prev_button, 3, 1)
 		self.setup_grid.addWidget(self.advanced_label, 3, 0)
 		self.setup_grid.addWidget(self.prediction_confidence_label, 4, 0)
 		self.setup_grid.addWidget(self.prediction_confidence_slider, 5, 0, 1, 2)
@@ -104,10 +109,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Set setup layout
 		self.setup_tab.setLayout(self.setup_grid)
 		# Hide hidden widgets
-		self.setup_next_button.hide()
-		self.setup_prev_button.hide()
+		#self.setup_next_button.hide()
+		#self.setup_prev_button.hide()
 
 	def createViewWindow(self):
+		self.view_pic_num = 1
 		# Setup window grid and frame
 		self.view_grid = QtWidgets.QGridLayout()
 		self.view_frame = QtWidgets.QFrame(self.cw)
@@ -119,6 +125,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.view_image = QtWidgets.QLabel()
 		view_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
 		self.view_image.setPixmap(view_pixmap.scaled(480, 360))
+		self.next_view_button = QtWidgets.QPushButton('>>')
+		self.prev_view_button = QtWidgets.QPushButton('<<')
 		self.value_lowend_label = QtWidgets.QLabel("$")
 		self.price_range_slider = RangeSlider()
 		self.value_highend_label = QtWidgets.QLabel("$$$")
@@ -130,18 +138,22 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.view_changer.addButton(self.value_button)
 		self.view_changer.addButton(self.weight_button)
 		self.category_tree = QtWidgets.QTreeWidget()
+		self.refresh_button = QtWidgets.QPushButton("Refresh")
 		# Populate
 		self.populate_tree_widget(self.category_tree)
 		# Add setup widgets to setup grid
 		self.view_grid.addWidget(self.view_title, 0, 0)
 		self.view_grid.addWidget(self.view_image, 1, 0, 4, 3)
-		self.view_grid.addWidget(self.value_lowend_label, 5, 0)
-		self.view_grid.addWidget(self.price_range_slider, 5, 1)
-		self.view_grid.addWidget(self.value_highend_label, 5, 2)
+		self.view_grid.addWidget(self.next_view_button, 5, 2)
+		self.view_grid.addWidget(self.prev_view_button, 5, 0)
+		self.view_grid.addWidget(self.value_lowend_label, 6, 0)
+		self.view_grid.addWidget(self.price_range_slider, 6, 1)
+		self.view_grid.addWidget(self.value_highend_label, 6, 2)
 		self.view_grid.addWidget(self.category_button, 1, 3)
 		self.view_grid.addWidget(self.value_button, 2, 3)
 		self.view_grid.addWidget(self.weight_button, 3, 3)
-		self.view_grid.addWidget(self.category_tree, 4, 3)
+		self.view_grid.addWidget(self.category_tree, 4, 3, 2, 1)
+		self.view_grid.addWidget(self.refresh_button, 6, 3)
 		# Set setup layout
 		self.view_tab.setLayout(self.view_grid)
 
@@ -158,16 +170,23 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.populate_vis_combobox()
 		self.analysis_category_tree = QtWidgets.QTreeWidget()
 		self.analysis_image = QtWidgets.QLabel()
+		self.view_widget = pg.GraphicsLayoutWidget()
+		self.bar_chart = bar_chart()
 		analysis_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
 		self.analysis_image.setPixmap(analysis_pixmap.scaled(480, 360))
 		self.reset_visualization_button = QtWidgets.QPushButton('Reset')
 		# Populate
 		self.populate_tree_widget(self.analysis_category_tree)
+		self.analysis_category_tree.setFixedWidth(250)
+		self.w1 = self.view_widget.addPlot(0, 0)
+		self.w2 = self.view_widget.addPlot(1, 0)
 		# Add analysis widgets to grid
 		self.analysis_grid.addWidget(self.analysis_title, 0, 0)
-		self.analysis_grid.addWidget(self.analysis_image, 1, 0, 4, 3)
-		self.analysis_grid.addWidget(self.vis_combobox, 1, 3)
-		self.analysis_grid.addWidget(self.analysis_category_tree, 2, 3)
+		self.analysis_grid.addWidget(self.analysis_image, 1, 0, 2, 3)
+		self.analysis_grid.addWidget(self.view_widget, 1, 0, 2, 3)
+		self.analysis_grid.addWidget(self.bar_chart, 1, 0, 2, 3)
+		self.analysis_grid.addWidget(self.vis_combobox, 1, 5)
+		self.analysis_grid.addWidget(self.analysis_category_tree, 2, 5)
 		self.analysis_grid.addWidget(self.reset_visualization_button, 3, 0)
 		self.analysis_tab.setLayout(self.analysis_grid)
 
@@ -180,9 +199,9 @@ class MainWindow(QtWidgets.QMainWindow):
 	def populate_tree_widget(self, widget):
 		widget.setHeaderHidden(True)
 		parents = ['Furniture', 'Sports Equipment', 'Electronics']
-		children = {'Furniture': ['Couch', 'Chair', 'Mirror', 'Dining Table'],
-		'Sports Equipment': ['Baseball Glove', 'Baseball Bat', 'Bicycle', 'Tennis Racket'],
-		'Electronics': ['Blender', 'Toaster', 'TV', 'Refrigerator']}
+		children = {'Furniture': ['chair', 'couch', 'bed', 'dining table', 'desk'],
+		'Sports Equipment': ['bicycle', 'baseball bat', 'baseball glove', 'skateboard', 'tennis racket', 'sports ball'],
+		'Electronics': ['tv', 'laptop']}
 		for parent in parents:
 			newEntry = QtWidgets.QTreeWidgetItem(widget)
 			newEntry.setText(0, parent)
@@ -199,9 +218,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def connect_widgets(self):
 		self.connect_setup_widgets()
+		self.connect_view_widgets()
+		self.connect_vis_widgets()
 
 	def connect_setup_widgets(self):
 		self.upload_button.clicked.connect(self.upload_picture)
+		self.setup_next_button.clicked.connect(self.next_setup_picture)
+		self.setup_prev_button.clicked.connect(self.prev_setup_picture)
+
+	def connect_vis_widgets(self):
+		self.vis_combobox.currentIndexChanged.connect(self.change_vis)
+		self.analysis_category_tree.itemClicked.connect(self.change_vis)
+
+	def connect_view_widgets(self):
+		self.next_view_button.clicked.connect(self.next_view_picture)
+		self.prev_view_button.clicked.connect(self.prev_view_picture)
+		self.view_changer.buttonClicked.connect(self.change_view)
+		self.refresh_button.clicked.connect(self.refresh_view)
 
 	# Update methods
 
@@ -212,21 +245,128 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.pictures.append(raw_pixmap)
 			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
 		# Mask Image
-		maskImage(path)
+		self.items += maskImage(path)
 		cat_pixmap = QtGui.QPixmap('cat.jpg')
 		price_pixmap = QtGui.QPixmap('price.jpg')
 		weight_pixmap = QtGui.QPixmap('weight.jpg')
 		self.processed_pictures['category'].append(cat_pixmap)
 		self.processed_pictures['price'].append(price_pixmap)
 		self.processed_pictures['weight'].append(weight_pixmap)
+		self.view_pic_num += 1
 		self.set_view_pixmap(cat_pixmap)
 
 	def set_view_pixmap(self, pixmap):
 		self.view_image.setPixmap(pixmap.scaled(480, 360))
 
+	def next_setup_picture(self):
+		if self.setup_pic_num == len(self.pictures):
+			raw_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
+			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
+			self.setup_pic_num += 1
+		if self.setup_pic_num < len(self.pictures):
+			raw_pixmap = self.pictures[self.setup_pic_num]
+			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
+			self.setup_pic_num += 1
+
+	def prev_setup_picture(self):
+		if self.setup_pic_num > 1:
+			raw_pixmap = self.pictures[self.setup_pic_num - 2]
+			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
+			self.setup_pic_num -= 1
+
+	def next_view_picture(self):
+		if self.view_pic_num < len(self.pictures) + 1:
+			# TODO: Change to selected radio button
+			pixmap = self.processed_pictures['category'][self.view_pic_num - 1]
+			self.view_image.setPixmap(pixmap.scaled(480, 360))
+			self.view_pic_num += 1
+
+	def prev_view_picture(self):
+		if self.view_pic_num > 2:
+			# TODO: Change to selected radio button
+			pixmap = self.processed_pictures['category'][self.view_pic_num - 3]
+			self.view_image.setPixmap(pixmap.scaled(480, 360))
+			self.view_pic_num -= 1
+
+	def change_view(self):
+		view_dict = {-2: 'category', -3: 'price', -4: 'weight'}
+		view = view_dict[self.view_changer.checkedId()]
+		pixmap = self.processed_pictures[view][self.view_pic_num - 2]
+		self.view_image.setPixmap(pixmap.scaled(480, 360))
+
+	def refresh_view(self):
+		# find each parameter
+		supported_labels = []
+		for item in self.category_tree.findItems("", QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
+		    if (item.checkState(0)>0) and item.text(0).islower():
+		        supported_labels.append(item.text(0))
+		lowend = (-1 * self.price_range_slider.startSlider.value() + 100) * 5
+		highend = (self.price_range_slider.endSlider.value()) * 5
+		if highend == 500:
+			highend = math.inf
+		# for picture in pictures
+		self.items = []
+		self.processed_pictures = {'category': [], 'price': [], 'weight': []}
+		for picture in self.pictures:
+			# save picture
+			picture.save('inter.jpg')
+			# mask each image using new parameters
+			self.items += maskImage('inter.jpg', labels=supported_labels, price_range=(lowend, highend))
+			cat_pixmap = QtGui.QPixmap('cat.jpg')
+			price_pixmap = QtGui.QPixmap('price.jpg')
+			weight_pixmap = QtGui.QPixmap('weight.jpg')
+			self.processed_pictures['category'].append(cat_pixmap)
+			self.processed_pictures['price'].append(price_pixmap)
+			self.processed_pictures['weight'].append(weight_pixmap)
+		self.set_view_pixmap(cat_pixmap)
+
+	def change_vis(self):
+		# Find out what is checked
+		supported_labels = []
+		for item in self.analysis_category_tree.findItems("", QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
+		    if (item.checkState(0)>0) and item.text(0).islower():
+		        supported_labels.append(item.text(0))
+		# Find items we have found and corresponding frequency
+		individual_items = []
+		item_frequency = []
+		for item in self.items:
+			if item not in individual_items and item in supported_labels:
+				individual_items.append(item)
+				item_frequency.append(1)
+			elif item in supported_labels:
+				item_frequency[individual_items.index(item)] += 1
+		# Create the value-weight scatterplot
+		if str(self.vis_combobox.currentText()) == 'Value-Weight Scatterplot':
+			self.analysis_image.hide()
+			individual_items = []
+			item_frequency = []
+			for item in self.items:
+				if item not in individual_items:
+					individual_items.append(item)
+					item_frequency.append(1)
+				else:
+					item_frequency[individual_items.index(item)] += 1
+			self.bar_chart.hide()
+			self.view_widget.show()
+			self.scatter = scatter_plot_histogram(self.w1, self.w2, individual_items, item_frequency)
+		# Create value barchart
+		if str(self.vis_combobox.currentText()) == 'Value Barchart':
+			self.analysis_image.hide()
+			self.bar_chart.show()
+			self.view_widget.hide()
+			self.bar_chart.populate(individual_items, item_frequency, value=True)
+		# Create weight barchart
+		if str(self.vis_combobox.currentText()) == 'Weight Barchart':
+			self.analysis_image.hide()
+			self.bar_chart.show()
+			self.view_widget.hide()
+			self.bar_chart.populate(individual_items, item_frequency, value=False)
+
+
 '''Launches MainWindow object'''
 def launch(filename=None):
-	app = QtWidgets.QApplication(sys.argv)
+	if not QtGui.QApplication.instance():
+		app = QtGui.QApplication(sys.argv)
 	mw = MainWindow()
 	sys.exit(app.exec_())
 

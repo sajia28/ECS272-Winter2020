@@ -10,3 +10,4 @@ dining table
 desk
 tv
 laptop
+sports ball
