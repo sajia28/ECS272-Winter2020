@@ -7,6 +7,7 @@ import string
 from PyQt5 import QtCore, QtWidgets, QtGui
 from AdditionalWidgets import FileEntry, RangeSlider
 from shutil import copyfile
+from maskImage import maskImage
 
 '''Primary source of interaction between all kinds of users
 and computer.'''
@@ -24,6 +25,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.showMaximized()
 
 		self.grid = QtWidgets.QGridLayout()
+
+		self.pictures = []
+		self.processed_pictures = {'category': [], 'price': [], 'weight': []}
 
 		self.createTabs()
 		self.createSetupWindow()
@@ -70,6 +74,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.raw_image = QtWidgets.QLabel()
 		raw_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
 		self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
+		self.setup_prev_button = QtWidgets.QPushButton(">>")
+		self.setup_next_button = QtWidgets.QPushButton("<<")
 		self.advanced_label = QtWidgets.QLabel("Advanced")
 		self.advanced_label.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
 		self.prediction_confidence_label = QtWidgets.QLabel("Prediction Confidence")
@@ -87,7 +93,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.setup_grid.addWidget(self.setup_title, 0, 0)
 		self.setup_grid.addWidget(self.path_entry, 1, 0)
 		self.setup_grid.addWidget(self.upload_button, 2, 0)
-		self.setup_grid.addWidget(self.raw_image, 1, 1, 2, 1)
+		self.setup_grid.addWidget(self.raw_image, 1, 1, 2, 2)
+		self.setup_grid.addWidget(self.setup_next_button, 3, 1)
+		self.setup_grid.addWidget(self.setup_prev_button, 3, 2)
 		self.setup_grid.addWidget(self.advanced_label, 3, 0)
 		self.setup_grid.addWidget(self.prediction_confidence_label, 4, 0)
 		self.setup_grid.addWidget(self.prediction_confidence_slider, 5, 0, 1, 2)
@@ -95,6 +103,9 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.setup_grid.addWidget(self.masking_confidence_slider, 7, 0, 1, 2)
 		# Set setup layout
 		self.setup_tab.setLayout(self.setup_grid)
+		# Hide hidden widgets
+		self.setup_next_button.hide()
+		self.setup_prev_button.hide()
 
 	def createViewWindow(self):
 		# Setup window grid and frame
@@ -167,9 +178,11 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vis_combobox.addItem('Alluvial Diagram')
 
 	def populate_tree_widget(self, widget):
+		widget.setHeaderHidden(True)
 		parents = ['Furniture', 'Sports Equipment', 'Electronics']
-		children = {'Furniture': ['Sofa', 'Chair'], 'Sports Equipment': ['Baseball Glove', 'Baseball Bat', 'Bicycle'],
-		'Electronics': ['Blender', 'Toaster', 'Befrigerator']}
+		children = {'Furniture': ['Couch', 'Chair', 'Mirror', 'Dining Table'],
+		'Sports Equipment': ['Baseball Glove', 'Baseball Bat', 'Bicycle', 'Tennis Racket'],
+		'Electronics': ['Blender', 'Toaster', 'TV', 'Refrigerator']}
 		for parent in parents:
 			newEntry = QtWidgets.QTreeWidgetItem(widget)
 			newEntry.setText(0, parent)
@@ -196,8 +209,20 @@ class MainWindow(QtWidgets.QMainWindow):
 		path = str(self.path_entry.text())
 		if os.path.isfile(path):
 			raw_pixmap = QtGui.QPixmap(path)
+			self.pictures.append(raw_pixmap)
 			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
+		# Mask Image
+		maskImage(path)
+		cat_pixmap = QtGui.QPixmap('cat.jpg')
+		price_pixmap = QtGui.QPixmap('price.jpg')
+		weight_pixmap = QtGui.QPixmap('weight.jpg')
+		self.processed_pictures['category'].append(cat_pixmap)
+		self.processed_pictures['price'].append(price_pixmap)
+		self.processed_pictures['weight'].append(weight_pixmap)
+		self.set_view_pixmap(cat_pixmap)
 
+	def set_view_pixmap(self, pixmap):
+		self.view_image.setPixmap(pixmap.scaled(480, 360))
 
 '''Launches MainWindow object'''
 def launch(filename=None):
