@@ -112,6 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		#self.setup_prev_button.hide()
 
 	def createViewWindow(self):
+		self.view_pic_num = 1
 		# Setup window grid and frame
 		self.view_grid = QtWidgets.QGridLayout()
 		self.view_frame = QtWidgets.QFrame(self.cw)
@@ -123,6 +124,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.view_image = QtWidgets.QLabel()
 		view_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
 		self.view_image.setPixmap(view_pixmap.scaled(480, 360))
+		self.next_view_button = QtWidgets.QPushButton('>>')
+		self.prev_view_button = QtWidgets.QPushButton('<<')
 		self.value_lowend_label = QtWidgets.QLabel("$")
 		self.price_range_slider = RangeSlider()
 		self.value_highend_label = QtWidgets.QLabel("$$$")
@@ -139,13 +142,15 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Add setup widgets to setup grid
 		self.view_grid.addWidget(self.view_title, 0, 0)
 		self.view_grid.addWidget(self.view_image, 1, 0, 4, 3)
-		self.view_grid.addWidget(self.value_lowend_label, 5, 0)
-		self.view_grid.addWidget(self.price_range_slider, 5, 1)
-		self.view_grid.addWidget(self.value_highend_label, 5, 2)
+		self.view_grid.addWidget(self.next_view_button, 5, 2)
+		self.view_grid.addWidget(self.prev_view_button, 5, 0)
+		self.view_grid.addWidget(self.value_lowend_label, 6, 0)
+		self.view_grid.addWidget(self.price_range_slider, 6, 1)
+		self.view_grid.addWidget(self.value_highend_label, 6, 2)
 		self.view_grid.addWidget(self.category_button, 1, 3)
 		self.view_grid.addWidget(self.value_button, 2, 3)
 		self.view_grid.addWidget(self.weight_button, 3, 3)
-		self.view_grid.addWidget(self.category_tree, 4, 3)
+		self.view_grid.addWidget(self.category_tree, 4, 3, 2, 1)
 		# Set setup layout
 		self.view_tab.setLayout(self.view_grid)
 
@@ -211,6 +216,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def connect_widgets(self):
 		self.connect_setup_widgets()
+		self.connect_view_widgets()
 		self.connect_vis_widgets()
 
 	def connect_setup_widgets(self):
@@ -220,6 +226,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def connect_vis_widgets(self):
 		self.vis_combobox.currentIndexChanged.connect(self.change_vis)
+
+	def connect_view_widgets(self):
+		self.next_view_button.clicked.connect(self.next_view_picture)
+		self.prev_view_button.clicked.connect(self.prev_view_picture)
 
 	# Update methods
 
@@ -237,6 +247,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.processed_pictures['category'].append(cat_pixmap)
 		self.processed_pictures['price'].append(price_pixmap)
 		self.processed_pictures['weight'].append(weight_pixmap)
+		self.view_pic_num += 1
 		self.set_view_pixmap(cat_pixmap)
 
 	def set_view_pixmap(self, pixmap):
@@ -257,6 +268,20 @@ class MainWindow(QtWidgets.QMainWindow):
 			raw_pixmap = self.pictures[self.setup_pic_num - 2]
 			self.raw_image.setPixmap(raw_pixmap.scaled(480, 360))
 			self.setup_pic_num -= 1
+
+	def next_view_picture(self):
+		if self.view_pic_num < len(self.pictures) + 1:
+			# TODO: Change to selected radio button
+			pixmap = self.processed_pictures['category'][self.view_pic_num - 1]
+			self.view_image.setPixmap(pixmap.scaled(480, 360))
+			self.view_pic_num += 1
+
+	def prev_view_picture(self):
+		if self.view_pic_num > 2:
+			# TODO: Change to selected radio button
+			pixmap = self.processed_pictures['category'][self.view_pic_num - 3]
+			self.view_image.setPixmap(pixmap.scaled(480, 360))
+			self.view_pic_num -= 1
 
 	def change_vis(self):
 		individual_items = []
