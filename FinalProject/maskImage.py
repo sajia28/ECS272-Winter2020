@@ -28,7 +28,7 @@ def maskImage(source, labels = None, price_range = (-1 * math.inf, math.inf)):
     price_dict = {}
     weight_dict = {}
     with open('project_dataset.csv', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        reader = csv.reader(csvfile, delimiter=',', quotechar='|', encoding='utf8')
         next(reader)
         for row in reader:
             if float(row[2]) >= price_range[0] and float(row[2]) <= price_range[1]:

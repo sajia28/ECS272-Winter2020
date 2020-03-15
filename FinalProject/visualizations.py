@@ -162,7 +162,7 @@ class bar_chart(QtWidgets.QWidget):
         self.price_dict = {}
         self.weight_dict = {}
         self.type_dict = {}
-        with open('project_dataset.csv', newline='', encoding="utf8") as csvfile:
+        with open('project_dataset.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             next(reader)
             for row in reader:
