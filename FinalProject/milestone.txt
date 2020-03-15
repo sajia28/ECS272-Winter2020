@@ -25,7 +25,6 @@ It is up to the user to determine which one bests suits them.
 
 Masking Script
 
-
 We wrote a masking script that uses the Mask R-CNN method of detecting objects in an image to identify items in 
 the image. Depending on the UI view selected, the segmentation mask differs- in the category view, items in the 
 same category are masked with the same color and all items' masks have the same opacity; in the price view, all 
@@ -36,6 +35,7 @@ the mask on a copy of the original image and saves the image as a jpg file on di
 from Adrian Rosebrock. While our code introduces several key features needed to make our application, such as changing 
 opacity, differing color schemes based on price and weight, and the ability to add and take away categories, some 
 of the code, namely importing the model and extracting the bounding boxes, is taken from the example.
+
 
 UI
 

@@ -365,7 +365,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.analysis_image.hide()
 			self.bar_chart.show()
 			self.view_widget.hide()
-			self.bar_chart.populate(individual_items, item_frequency, value=False)			
+			self.bar_chart.populate(individual_items, item_frequency, value=False)
 
 
 '''Launches MainWindow object'''

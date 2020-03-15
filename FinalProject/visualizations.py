@@ -57,16 +57,25 @@ class scatter_plot_histogram:
         self.selected_point = None
 
         # creates the histogram
-        histogram_subset = dataset.loc[dataset['name'] == names[0]]
 
-        histogram_y, histogram_x = np.histogram(histogram_subset['price'].tolist())
+        if len(names) > 0:
+            histogram_subset = dataset.loc[dataset['name'] == names[0]]
 
-        self.histogram = pg.PlotCurveItem(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 200, 200),
-                                          pen='k')
-        widget2.addItem(self.histogram)
-        widget2.setLabel('left', '# of Occurrences')
-        widget2.setLabel('bottom', 'Price (USD)')
-        widget2.setTitle(names[0].capitalize() + ' Price Histogram')
+            histogram_y, histogram_x = np.histogram(histogram_subset['price'].tolist())
+
+            self.histogram = pg.PlotCurveItem(histogram_x, histogram_y, stepMode=True, fillLevel=0,
+                                              brush=(0, 0, 200, 200), pen='k')
+            widget2.addItem(self.histogram)
+            widget2.setLabel('left', '# of Occurrences')
+            widget2.setLabel('bottom', 'Price (USD)')
+            widget2.setTitle(names[0].capitalize() + ' Price Histogram')
+        else:
+            self.histogram = pg.PlotCurveItem()
+            widget2.addItem(self.histogram)
+            widget2.setLabel('left', '# of Occurrences')
+            widget2.setLabel('bottom', 'Price (USD)')
+            widget2.setTitle('Price Histogram')
+
         self.widget2 = widget2
 
     def update_histogram(self, name):
@@ -153,7 +162,7 @@ class bar_chart(QtWidgets.QWidget):
         self.price_dict = {}
         self.weight_dict = {}
         self.type_dict = {}
-        with open('project_dataset.csv', newline='') as csvfile:
+        with open('project_dataset.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='|')
             next(reader)
             for row in reader:

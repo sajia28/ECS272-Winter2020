@@ -28,7 +28,7 @@ def maskImage(source, prediction_confidence, masking_confidence, price_range = (
     price_dict = {}
     weight_dict = {}
     with open('project_dataset.csv', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        reader = csv.reader(csvfile, delimiter=',', quotechar='|', encoding='utf8')
         next(reader)
         for row in reader:
             if float(row[2]) >= price_range[0] and float(row[2]) <= price_range[1]:
@@ -179,10 +179,11 @@ def maskImageHelper(source, color_dictionary, price_dict, weight_dict, predictio
     cv2.imwrite(filepath, clone)
     cv2.imwrite(price_filepath, price_clone)
     cv2.imwrite(weight_filepath, weight_clone)
+
     return items
 
 def findProportion(scaleVals,objVal):
-    prop = (objVal-float(scaleVals.min()))/(float(scaleVals.max())-float(scaleVals.min()))
+    prop = min(objVal/500,0.8)
     return float(round(prop,1))
 
 def makeColor(color,roi,proportion):
