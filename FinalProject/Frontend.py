@@ -230,6 +230,7 @@ class MainWindow(QtWidgets.QMainWindow):
 	def connect_view_widgets(self):
 		self.next_view_button.clicked.connect(self.next_view_picture)
 		self.prev_view_button.clicked.connect(self.prev_view_picture)
+		self.view_changer.buttonClicked.connect(self.change_view)
 
 	# Update methods
 
@@ -282,6 +283,12 @@ class MainWindow(QtWidgets.QMainWindow):
 			pixmap = self.processed_pictures['category'][self.view_pic_num - 3]
 			self.view_image.setPixmap(pixmap.scaled(480, 360))
 			self.view_pic_num -= 1
+
+	def change_view(self):
+		view_dict = {-2: 'category', -3: 'price', -4: 'weight'}
+		view = view_dict[self.view_changer.checkedId()]
+		pixmap = self.processed_pictures[view][self.view_pic_num - 2]
+		self.view_image.setPixmap(pixmap.scaled(480, 360))
 
 	def change_vis(self):
 		individual_items = []
