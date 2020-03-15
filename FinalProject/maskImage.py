@@ -31,11 +31,12 @@ def maskImage(source, labels = None, price_range = (-1 * math.inf, math.inf)):
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         next(reader)
         for row in reader:
-            if row[0] not in price_dict.keys() and float(row[2]) >= price_range[0] and float(row[2]) <= price_range[1]:
-                price_dict[row[0]] = []
-                weight_dict[row[0]] = []
-            price_dict[row[0]].append(float(row[2]))
-            weight_dict[row[0]].append(float(row[3]))
+            if float(row[2]) >= price_range[0] and float(row[2]) <= price_range[1]:
+                if row[0] not in price_dict.keys():
+                    price_dict[row[0]] = []
+                    weight_dict[row[0]] = []
+                price_dict[row[0]].append(float(row[2]))
+                weight_dict[row[0]].append(float(row[3]))
     average_prices = {}
     average_weights = {}
     for key in price_dict.keys():
@@ -120,54 +121,55 @@ def maskImageHelper(source, color_dictionary, price_dict, weight_dict, labels = 
             # particular instance segmentation then create a transparent
             # overlay by blending the randomly selected color with the ROI
             name = LABELS[classID]
-            items.append(name)
-            category = df[df['name']==name]['category'].unique()
-            category = category[0]
-            # Category view
-            color = np.array(color_dictionary[category])
-            proportion = 0.5
-            blended = makeColor(color,roi,proportion)
-            clone[startY:endY, startX:endX][mask] = blended
+            if name in price_dict.keys():
+                items.append(name)
+                category = df[df['name']==name]['category'].unique()
+                category = category[0]
+                # Category view
+                color = np.array(color_dictionary[category])
+                proportion = 0.5
+                blended = makeColor(color,roi,proportion)
+                clone[startY:endY, startX:endX][mask] = blended
 
-            # draw the bounding box of the instance on the image
-            color = [int(c) for c in color]
-            cv2.rectangle(clone, (startX, startY), (endX, endY), color, 2)
+                # draw the bounding box of the instance on the image
+                color = [int(c) for c in color]
+                cv2.rectangle(clone, (startX, startY), (endX, endY), color, 2)
 
-            # draw the predicted label and associated probability of the
-            # instance segmentation on the image
-            text = "{}: {:.4f}".format(LABELS[classID], confidence)
-            cv2.putText(clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            # Price view
-            color = np.array([0,255,255])
-            avgPrice = price_dict[name]
-            proportion = findProportion(df['price'],avgPrice)
-            blended = makeColor(color,roi,proportion)
-            price_clone[startY:endY, startX:endX][mask] = blended
+                # draw the predicted label and associated probability of the
+                # instance segmentation on the image
+                text = "{}: {:.4f}".format(LABELS[classID], confidence)
+                cv2.putText(clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                # Price view
+                color = np.array([0,255,255])
+                avgPrice = price_dict[name]
+                proportion = findProportion(df['price'],avgPrice)
+                blended = makeColor(color,roi,proportion)
+                price_clone[startY:endY, startX:endX][mask] = blended
 
-            # draw the bounding box of the instance on the image
-            color = [int(c) for c in color]
-            cv2.rectangle(price_clone, (startX, startY), (endX, endY), color, 2)
+                # draw the bounding box of the instance on the image
+                color = [int(c) for c in color]
+                cv2.rectangle(price_clone, (startX, startY), (endX, endY), color, 2)
 
-            # draw the predicted label and associated probability of the
-            # instance segmentation on the image
-            text = "{}: {:.4f}".format(LABELS[classID], confidence)
-            cv2.putText(price_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            # Weight view
-            color = np.array([0,0,255])
-            avgWt = weight_dict[name]
-            proportion = findProportion(df['weight'],avgWt)
-            blended = makeColor(color,roi,proportion)
-            # store the blended ROI in the original image
-            weight_clone[startY:endY, startX:endX][mask] = blended
+                # draw the predicted label and associated probability of the
+                # instance segmentation on the image
+                text = "{}: {:.4f}".format(LABELS[classID], confidence)
+                cv2.putText(price_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                # Weight view
+                color = np.array([0,0,255])
+                avgWt = weight_dict[name]
+                proportion = findProportion(df['weight'],avgWt)
+                blended = makeColor(color,roi,proportion)
+                # store the blended ROI in the original image
+                weight_clone[startY:endY, startX:endX][mask] = blended
 
-            # draw the bounding box of the instance on the image
-            color = [int(c) for c in color]
-            cv2.rectangle(weight_clone, (startX, startY), (endX, endY), color, 2)
+                # draw the bounding box of the instance on the image
+                color = [int(c) for c in color]
+                cv2.rectangle(weight_clone, (startX, startY), (endX, endY), color, 2)
 
-            # draw the predicted label and associated probability of the
-            # instance segmentation on the image
-            text = "{}: {:.4f}".format(LABELS[classID], confidence)
-            cv2.putText(weight_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                # draw the predicted label and associated probability of the
+                # instance segmentation on the image
+                text = "{}: {:.4f}".format(LABELS[classID], confidence)
+                cv2.putText(weight_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
             # show the output image
     #cv2.imshow("Output", clone)
