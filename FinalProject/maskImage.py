@@ -23,11 +23,11 @@ import math
 import pandas as pd
 from PyQt5 import QtGui
 
-def maskImage(source, labels = None, price_range = (-1 * math.inf, math.inf)):
+def maskImage(source, prediction_confidence, masking_confidence, price_range = (-1 * math.inf, math.inf), labels = None):
     # CSV Stuff
     price_dict = {}
     weight_dict = {}
-    with open('project_dataset.csv', newline='') as csvfile:
+    with open('project_dataset.csv', newline='', encoding='utf8') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         next(reader)
         for row in reader:
@@ -43,9 +43,9 @@ def maskImage(source, labels = None, price_range = (-1 * math.inf, math.inf)):
         average_prices[key] = statistics.mean(price_dict[key])
         average_weights[key] = statistics.mean(weight_dict[key])
     cd = {"furniture":(255,0,0),"electronics":(0,0,255),"sports":(0,255,0)}
-    return maskImageHelper(source, cd, average_prices, average_weights, labels)
+    return maskImageHelper(source, cd, average_prices, average_weights, prediction_confidence, masking_confidence, labels)
 
-def maskImageHelper(source, color_dictionary, price_dict, weight_dict, labels = None):
+def maskImageHelper(source, color_dictionary, price_dict, weight_dict, prediction_confidence, masking_confidence, labels = None):
     df = pd.read_csv("project_dataset.csv")
     directory = "mask-rcnn-coco"
     # load the COCO class labels our Mask R-CNN was trained on
