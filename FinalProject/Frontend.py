@@ -3,6 +3,7 @@ import webbrowser
 import os
 import time
 import random
+import math
 import string
 from pyqtgraph.Qt import QtWidgets, QtGui, QtCore
 import pyqtgraph as pg
@@ -137,6 +138,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.view_changer.addButton(self.value_button)
 		self.view_changer.addButton(self.weight_button)
 		self.category_tree = QtWidgets.QTreeWidget()
+		self.refresh_button = QtWidgets.QPushButton("Refresh")
 		# Populate
 		self.populate_tree_widget(self.category_tree)
 		# Add setup widgets to setup grid
@@ -151,6 +153,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.view_grid.addWidget(self.value_button, 2, 3)
 		self.view_grid.addWidget(self.weight_button, 3, 3)
 		self.view_grid.addWidget(self.category_tree, 4, 3, 2, 1)
+		self.view_grid.addWidget(self.refresh_button, 6, 3)
 		# Set setup layout
 		self.view_tab.setLayout(self.view_grid)
 
@@ -197,9 +200,9 @@ class MainWindow(QtWidgets.QMainWindow):
 	def populate_tree_widget(self, widget):
 		widget.setHeaderHidden(True)
 		parents = ['Furniture', 'Sports Equipment', 'Electronics']
-		children = {'Furniture': ['Couch', 'Chair', 'Mirror', 'Dining Table'],
-		'Sports Equipment': ['Baseball Glove', 'Baseball Bat', 'Bicycle', 'Tennis Racket'],
-		'Electronics': ['Blender', 'Toaster', 'TV', 'Refrigerator']}
+		children = {'Furniture': ['chair', 'couch', 'bed', 'dining table', 'desk'],
+		'Sports Equipment': ['bicycle', 'baseball bat', 'baseball glove', 'skateboard', 'tennis racket', 'sports ball'],
+		'Electronics': ['tv', 'laptop']}
 		for parent in parents:
 			newEntry = QtWidgets.QTreeWidgetItem(widget)
 			newEntry.setText(0, parent)
@@ -231,6 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.next_view_button.clicked.connect(self.next_view_picture)
 		self.prev_view_button.clicked.connect(self.prev_view_picture)
 		self.view_changer.buttonClicked.connect(self.change_view)
+		self.refresh_button.clicked.connect(self.refresh_view)
 
 	# Update methods
 
@@ -289,6 +293,32 @@ class MainWindow(QtWidgets.QMainWindow):
 		view = view_dict[self.view_changer.checkedId()]
 		pixmap = self.processed_pictures[view][self.view_pic_num - 2]
 		self.view_image.setPixmap(pixmap.scaled(480, 360))
+
+	def refresh_view(self):
+		# find each parameter
+		supported_labels = []
+		for item in self.category_tree.findItems("", QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
+		    if (item.checkState(0)>0) and item.text(0).islower():
+		        supported_labels.append(item.text(0))
+		lowend = (-1 * self.price_range_slider.startSlider.value() + 100) * 5
+		highend = (self.price_range_slider.endSlider.value()) * 5
+		if highend == 500:
+			highend = math.inf
+		# for picture in pictures
+		self.items = []
+		self.processed_pictures = {'category': [], 'price': [], 'weight': []}
+		for picture in self.pictures:
+			# save picture
+			picture.save('inter.jpg')
+			# mask each image using new parameters
+			self.items += maskImage('inter.jpg', labels=supported_labels, price_range=(lowend, highend))
+			cat_pixmap = QtGui.QPixmap('cat.jpg')
+			price_pixmap = QtGui.QPixmap('price.jpg')
+			weight_pixmap = QtGui.QPixmap('weight.jpg')
+			self.processed_pictures['category'].append(cat_pixmap)
+			self.processed_pictures['price'].append(price_pixmap)
+			self.processed_pictures['weight'].append(weight_pixmap)
+		self.set_view_pixmap(cat_pixmap)
 
 	def change_vis(self):
 		individual_items = []

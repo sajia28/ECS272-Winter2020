@@ -19,10 +19,11 @@ import cv2
 import os
 import csv
 import statistics
+import math
 import pandas as pd
 from PyQt5 import QtGui
 
-def maskImage(source):
+def maskImage(source, labels = None, price_range = (-1 * math.inf, math.inf)):
     # CSV Stuff
     price_dict = {}
     weight_dict = {}
@@ -30,7 +31,7 @@ def maskImage(source):
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         next(reader)
         for row in reader:
-            if row[0] not in price_dict.keys():
+            if row[0] not in price_dict.keys() and float(row[2]) >= price_range[0] and float(row[2]) <= price_range[1]:
                 price_dict[row[0]] = []
                 weight_dict[row[0]] = []
             price_dict[row[0]].append(float(row[2]))
@@ -41,16 +42,19 @@ def maskImage(source):
         average_prices[key] = statistics.mean(price_dict[key])
         average_weights[key] = statistics.mean(weight_dict[key])
     cd = {"furniture":(255,0,0),"electronics":(0,0,255),"sports":(0,255,0)}
-    return maskImageHelper(source, cd, average_prices, average_weights)
+    return maskImageHelper(source, cd, average_prices, average_weights, labels)
 
-def maskImageHelper(source, color_dictionary, price_dict, weight_dict):
+def maskImageHelper(source, color_dictionary, price_dict, weight_dict, labels = None):
     df = pd.read_csv("project_dataset.csv")
     directory = "mask-rcnn-coco"
     # load the COCO class labels our Mask R-CNN was trained on
     labelsPath = os.path.sep.join([directory,"object_detection_classes_coco.txt"])
     LABELS = open(labelsPath).read().strip().split("\n")
-    supportedLabelsPath = os.path.sep.join([directory,'supported_classes.txt'])
-    SUPPORTEDLABELS = open(supportedLabelsPath).read().strip().split("\n")
+    if labels == None:
+        supportedLabelsPath = os.path.sep.join([directory,'supported_classes.txt'])
+        SUPPORTEDLABELS = open(supportedLabelsPath).read().strip().split("\n")
+    else:
+        SUPPORTEDLABELS = labels
 
     # derive the paths to the Mask R-CNN weights and model configuration
     weightsPath = os.path.sep.join([directory,"frozen_inference_graph.pb"])
