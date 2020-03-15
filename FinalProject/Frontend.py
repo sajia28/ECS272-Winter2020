@@ -229,6 +229,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def connect_vis_widgets(self):
 		self.vis_combobox.currentIndexChanged.connect(self.change_vis)
+		self.analysis_category_tree.itemClicked.connect(self.change_vis)
 
 	def connect_view_widgets(self):
 		self.next_view_button.clicked.connect(self.next_view_picture)
@@ -321,14 +322,21 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.set_view_pixmap(cat_pixmap)
 
 	def change_vis(self):
+		# Find out what is checked
+		supported_labels = []
+		for item in self.analysis_category_tree.findItems("", QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
+		    if (item.checkState(0)>0) and item.text(0).islower():
+		        supported_labels.append(item.text(0))
+		# Find items we have found and corresponding frequency
 		individual_items = []
 		item_frequency = []
 		for item in self.items:
-			if item not in individual_items:
+			if item not in individual_items and item in supported_labels:
 				individual_items.append(item)
 				item_frequency.append(1)
-			else:
+			elif item in supported_labels:
 				item_frequency[individual_items.index(item)] += 1
+		# Create the value-weight scatterplot
 		if str(self.vis_combobox.currentText()) == 'Value-Weight Scatterplot':
 			self.analysis_image.hide()
 			individual_items = []
@@ -342,11 +350,13 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.bar_chart.hide()
 			self.view_widget.show()
 			self.scatter = scatter_plot_histogram(self.w1, self.w2, individual_items, item_frequency)
+		# Create value barchart
 		if str(self.vis_combobox.currentText()) == 'Value Barchart':
 			self.analysis_image.hide()
 			self.bar_chart.show()
 			self.view_widget.hide()
 			self.bar_chart.populate(individual_items, item_frequency, value=True)
+		# Create weight barchart
 		if str(self.vis_combobox.currentText()) == 'Weight Barchart':
 			self.analysis_image.hide()
 			self.bar_chart.show()

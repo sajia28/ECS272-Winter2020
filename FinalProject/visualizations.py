@@ -33,13 +33,12 @@ class scatter_plot_histogram:
             size_list.append(freqs[index] * 10)
 
         # creates the scatter plot
-        self.plot_points = pg.ScatterPlotItem(avg_weight_list, avg_price_list, size=size_list,
-                                              pen=pg.mkPen(width=1, color=(0, 0, 0)), data=names,
-                                              brush=pg.mkBrush(0, 0, 220, 120))
+        self.plot_points = pg.ScatterPlotItem(avg_weight_list, avg_price_list, size=size_list, pen=pg.mkPen(width=1, color=(0, 0, 0)),
+                                                 data=names, brush=pg.mkBrush(0, 0, 255, 120))
         widget1.addItem(self.plot_points)
         widget1.setLabel('left', 'Average Price (USD)')
         widget1.setLabel('bottom', 'Average Weight (Kg)')
-        widget1.setTitle('Price Vs Weight Scatter Plot for Unique Items')
+        widget1.setTitle('Price Vs Wgt Scatter Plot')
         self.widget1 = widget1
 
         # creates the scatter plot's tooltip
@@ -50,6 +49,7 @@ class scatter_plot_histogram:
         # adds embedded interactions
         self.plot_points.scene().sigMouseMoved.connect(self.onMove)
         self.plot_points.sigClicked.connect(self.onClick)
+        print('connect')
         self.selected_point = None
 
         # creates the histogram
@@ -81,38 +81,25 @@ class scatter_plot_histogram:
 
             # highlights the point that was hovered over and un-highlights the previous point
             if self.selected_point is not None and self.selected_point is not point:
-                self.selected_point.setBrush(0, 0, 220, 120)
+                self.selected_point.setBrush(0, 0, 255, 80)
             self.selected_point = point
-            self.selected_point.setBrush(100, 220, 100, 120)
+            self.selected_point.setBrush(100, 100, 255, 80)
 
             # updates and shows the tooltip
             tooltip_text = 'name: ' + point.data() + '\navg price: $' + str(point.pos()[1]) + \
-                           '\navg wgt: ' + str(point.pos()[0]) + ' Kg' + '\nitem count: ' + str(int(point.size() / 10))
+                           '\navg wgt: ' + str(point.pos()[0]) + ' Kg'
             self.tooltip.setText(tooltip_text)
 
-            # gets the mouse position and the plot's min/max x an y values
-            x_min = self.widget1.getAxis('bottom').range[0]
-            y_min = self.widget1.getAxis('left').range[0]
+            # gets the mouse position and the plot's max x an y values
             x_max = self.widget1.getAxis('bottom').range[1]
             y_max = self.widget1.getAxis('left').range[1]
             x_pos = point.pos()[0]
             y_pos = point.pos()[1]
 
-            # if the mouse is closer to the top right edge of the plot
+            # if the mouse is close to the right or left of the plot's edge
             # set the anchor to the tooltip's top right
-            if (0.5 * (x_max - x_min)) < (x_pos - x_min) and (0.5 * (y_max - y_min)) < (y_pos - y_min):
+            if (3 * x_max / 4) < x_pos or (3 * y_max / 4) < y_pos:
                 self.tooltip.setAnchor((1, 0))
-
-            # if the mouse is closer to the top left edge of the plot
-            # set the anchor to the tooltip's top left
-            elif (0.5 * (y_max - y_min)) < (y_pos - y_min):
-                self.tooltip.setAnchor((0, 0))
-
-            # if the mouse is closer to the bottom right edge of the plot
-            # set the anchor to the tooltip's bottom right
-            elif (0.5 * (x_max - x_min)) < (x_pos - x_min):
-                self.tooltip.setAnchor((1, 1))
-
             # else, set the anchor to the tooltip's bottom left
             else:
                 self.tooltip.setAnchor((0, 1))
@@ -128,7 +115,7 @@ class scatter_plot_histogram:
 
             # un-highlights the point that was hovered over
             if self.selected_point is not None:
-                self.selected_point.setBrush(0, 0, 220, 120)
+                self.selected_point.setBrush(0, 0, 255, 80)
                 self.selected_point = None
 
     def onClick(self, _, points_list):
@@ -170,6 +157,8 @@ class bar_chart(QtWidgets.QWidget):
         self.setLayout(self.grid)
 
     def populate(self, items, freqs, value=True,):
+
+        self.type_entries = [0, 0, 0]
 
         self.items = items
 
