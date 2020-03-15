@@ -38,7 +38,7 @@ class scatter_plot_histogram:
         # creates the scatter plot
         self.plot_points = pg.ScatterPlotItem(avg_weight_list, avg_price_list, size=size_list,
                                               pen=pg.mkPen(width=1, color=(0, 0, 0)), data=names,
-                                              brush=pg.mkBrush(0, 0, 220, 120))
+                                              brush=pg.mkBrush(0, 0, 200, 200))
         widget1.addItem(self.plot_points)
         widget1.setLabel('left', 'Average Price (USD)')
         widget1.setLabel('bottom', 'Average Weight (Kg)')
@@ -61,7 +61,7 @@ class scatter_plot_histogram:
 
         histogram_y, histogram_x = np.histogram(histogram_subset['price'].tolist())
 
-        self.histogram = pg.PlotCurveItem(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 220, 120),
+        self.histogram = pg.PlotCurveItem(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 200, 200),
                                           pen='k')
         widget2.addItem(self.histogram)
         widget2.setLabel('left', '# of Occurrences')
@@ -73,7 +73,7 @@ class scatter_plot_histogram:
         histogram_subset = dataset.loc[dataset['name'] == name]
 
         histogram_y, histogram_x = np.histogram(histogram_subset['price'].tolist())
-        self.histogram.setData(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 220, 120), pen='k')
+        self.histogram.setData(histogram_x, histogram_y, stepMode=True, fillLevel=0, brush=(0, 0, 200, 200), pen='k')
         self.widget2.setTitle(name.capitalize() + ' Price Histogram')
 
     def onMove(self, pos):
@@ -86,9 +86,9 @@ class scatter_plot_histogram:
 
             # highlights the point that was hovered over and un-highlights the previous point
             if self.selected_point is not None and self.selected_point is not point:
-                self.selected_point.setBrush(0, 0, 220, 120)
+                self.selected_point.setBrush(0, 0, 200, 200)
             self.selected_point = point
-            self.selected_point.setBrush(100, 220, 100, 120)
+            self.selected_point.setBrush(100, 200, 50, 200)
 
             # updates and shows the tooltip
             tooltip_text = 'name: ' + point.data() + '\navg price: $' + str(point.pos()[1]) + \
@@ -133,7 +133,7 @@ class scatter_plot_histogram:
 
             # un-highlights the point that was hovered over
             if self.selected_point is not None:
-                self.selected_point.setBrush(0, 0, 220, 120)
+                self.selected_point.setBrush(0, 0, 200, 200)
                 self.selected_point = None
 
     def onClick(self, _, points_list):
@@ -294,7 +294,7 @@ if __name__ == '__main__':
     # for debugging purposes
     app = QtGui.QApplication([])
     mw = QtGui.QMainWindow()
-    mw.resize(900,600)
+    mw.resize(900, 600)
     mw.resize(900, 600)
     mw.show()
     test = bar_chart()
