@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.masking_confidence_slider.setMaximum(100)
 		self.masking_confidence_slider.setValue(30)
 		# Add setup widgets to setup grid
-		self.setup_grid.addWidget(self.setup_title, 0, 0)
+		self.setup_grid.addWidget(self.setup_title, 0, 1)
 		self.setup_grid.addWidget(self.path_entry, 1, 0)
 		self.setup_grid.addWidget(self.upload_button, 2, 0)
 		self.setup_grid.addWidget(self.raw_image, 1, 1, 2, 2)
@@ -144,17 +144,17 @@ class MainWindow(QtWidgets.QMainWindow):
 		# Populate
 		self.populate_tree_widget(self.category_tree)
 		# Add setup widgets to setup grid
-		self.view_grid.addWidget(self.view_title, 0, 0)
-		self.view_grid.addWidget(self.view_image, 1, 0, 4, 3)
-		self.view_grid.addWidget(self.next_view_button, 5, 2)
+		self.view_grid.addWidget(self.view_title, 0, 2)
+		self.view_grid.addWidget(self.view_image, 1, 0, 4, 4)
+		self.view_grid.addWidget(self.next_view_button, 5, 3)
 		self.view_grid.addWidget(self.prev_view_button, 5, 0)
 		self.view_grid.addWidget(self.value_lowend_label, 6, 0)
 		self.view_grid.addWidget(self.price_range_slider, 6, 1)
 		self.view_grid.addWidget(self.value_highend_label, 6, 2)
-		self.view_grid.addWidget(self.category_button, 1, 3)
-		self.view_grid.addWidget(self.value_button, 2, 3)
-		self.view_grid.addWidget(self.weight_button, 3, 3)
-		self.view_grid.addWidget(self.category_tree, 4, 3, 2, 1)
+		self.view_grid.addWidget(self.category_button, 1, 4)
+		self.view_grid.addWidget(self.value_button, 2, 4)
+		self.view_grid.addWidget(self.weight_button, 3, 4)
+		self.view_grid.addWidget(self.category_tree, 4, 4, 2, 1)
 		self.view_grid.addWidget(self.refresh_button, 6, 3)
 		# Set setup layout
 		self.view_tab.setLayout(self.view_grid)
@@ -184,7 +184,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.w1 = self.view_widget.addPlot(0, 0)
 		self.w2 = self.view_widget.addPlot(1, 0)
 		# Add analysis widgets to grid
-		self.analysis_grid.addWidget(self.analysis_title, 0, 0)
+		self.analysis_grid.addWidget(self.analysis_title, 0, 2)
 		self.analysis_grid.addWidget(self.analysis_placeholder, 1, 0, 2, 3)
 		self.analysis_grid.addWidget(self.alluvial_diagram, 1, 0, 2, 3)
 		self.analysis_grid.addWidget(self.view_widget, 1, 0, 2, 3)
@@ -264,6 +264,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.processed_pictures['weight'].append(weight_pixmap)
 		self.view_pic_num += 1
 		self.set_view_pixmap(cat_pixmap)
+		self.change_vis()
 
 	def set_view_pixmap(self, pixmap):
 		self.view_image.setPixmap(pixmap.scaled(480, 360))
