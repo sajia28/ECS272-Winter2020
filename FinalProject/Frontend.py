@@ -285,15 +285,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
 	def next_view_picture(self):
 		if self.view_pic_num < len(self.pictures) + 1:
-			# TODO: Change to selected radio button
-			pixmap = self.processed_pictures['category'][self.view_pic_num - 1]
+			view_dict = {-1: 'category', -2: 'category', -3: 'price', -4: 'weight'}
+			view = view_dict[self.view_changer.checkedId()]
+			pixmap = self.processed_pictures[view][self.view_pic_num - 1]
 			self.view_image.setPixmap(pixmap.scaled(480, 360))
 			self.view_pic_num += 1
 
 	def prev_view_picture(self):
 		if self.view_pic_num > 2:
-			# TODO: Change to selected radio button
-			pixmap = self.processed_pictures['category'][self.view_pic_num - 3]
+			view_dict = {-1: 'category', -2: 'category', -3: 'price', -4: 'weight'}
+			view = view_dict[self.view_changer.checkedId()]
+			pixmap = self.processed_pictures[view][self.view_pic_num - 3]
 			self.view_image.setPixmap(pixmap.scaled(480, 360))
 			self.view_pic_num -= 1
 

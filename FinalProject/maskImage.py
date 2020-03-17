@@ -169,7 +169,7 @@ def maskImageHelper(source, color_dictionary, price_dict, weight_dict, predictio
                 # draw the predicted label and associated probability of the
                 # instance segmentation on the image
                 text = "{}: {:.4f}".format(LABELS[classID], confidence)
-                cv2.putText(weight_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 2, color, 4)
+                cv2.putText(weight_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
 
             # show the output image
     #cv2.imshow("Output", clone)
