@@ -338,9 +338,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.view_widget.hide()
 		# Find out what is checked
 		supported_labels = []
+		cats = []
 		for item in self.analysis_category_tree.findItems("", QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
 		    if (item.checkState(0)>0) and item.text(0).islower():
 		        supported_labels.append(item.text(0))
+		    if (item.checkState(0)>0) and item.text(0)[0].isupper():
+		    	cats.append(item.text(0).lower())
 		# Find items we have found and corresponding frequency
 		individual_items = []
 		item_frequency = []
@@ -352,14 +355,6 @@ class MainWindow(QtWidgets.QMainWindow):
 				item_frequency[individual_items.index(item)] += 1
 		# Create the value-weight scatterplot
 		if str(self.vis_combobox.currentText()) == 'Value-Weight Scatterplot':
-			individual_items = []
-			item_frequency = []
-			for item in self.items:
-				if item not in individual_items:
-					individual_items.append(item)
-					item_frequency.append(1)
-				else:
-					item_frequency[individual_items.index(item)] += 1
 			self.view_widget.show()
 			self.scatter = scatter_plot_histogram(self.w1, self.w2, individual_items, item_frequency)
 		# Create value barchart
@@ -372,6 +367,7 @@ class MainWindow(QtWidgets.QMainWindow):
 			self.bar_chart.populate(individual_items, item_frequency, value=False)
 		# Create alluvial diagram
 		else:
+			self.alluvial_diagram.update_categories(cats)
 			self.alluvial_diagram.show()
 
 

@@ -302,10 +302,11 @@ class bar_chart(QtWidgets.QWidget):
 
 class alluvial_diagram(QtWidgets.QWidget):
 
-    def __init__(self,parent=None):
+    def __init__(self, categories = ['electronics','furniture','sports'], parent=None):
 
         QtWidgets.QWidget.__init__(self, parent)
 
+        self.categories = categories
         self.grid = QtWidgets.QGridLayout()
         self.paid_disp_df = dataset.copy()
         self.free_disp_df = dataset.copy()
@@ -313,7 +314,7 @@ class alluvial_diagram(QtWidgets.QWidget):
         self.paid_disp_df.reset_index(inplace=True)
         self.free_disp_df = self.free_disp_df.groupby(['category','free_disposal']).count()
         self.free_disp_df.reset_index(inplace=True)
-        self.diagram = self.make_alluvial()
+        self.make_alluvial()
         self.grid.addWidget(self.diagram, 0, 0)
         self.setLayout(self.grid)
 
@@ -342,7 +343,7 @@ class alluvial_diagram(QtWidgets.QWidget):
         #sankey_df.reset_index(inplace=True)
         #sankey_df = sankey_df[sankey_df.cc == True]
         #print(sankey_df)
-        categories = ['electronics','furniture','sports']
+        categories = self.categories
         free_disp_methods = ['donation']
         paid_disp_methods = ['curbside collection']
         flow_values_list = self.get_flow_values(free_disp_methods,"f")
@@ -388,7 +389,11 @@ class alluvial_diagram(QtWidgets.QWidget):
         fig_view.setHtml(raw_html)
         fig_view.show()
         fig_view.raise_()
-        return fig_view
+        self.diagram = fig_view
+
+    def update_categories(self, categories):
+        self.categories = categories
+        self.diagram = self.make_alluvial()
 
 # Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':

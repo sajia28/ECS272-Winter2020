@@ -138,7 +138,7 @@ def maskImageHelper(source, color_dictionary, price_dict, weight_dict, predictio
                 # draw the predicted label and associated probability of the
                 # instance segmentation on the image
                 text = "{}: {:.4f}".format(LABELS[classID], confidence)
-                cv2.putText(clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                cv2.putText(clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
                 # Price view
                 color = np.array([0,255,255])
                 avgPrice = price_dict[name]
@@ -148,12 +148,12 @@ def maskImageHelper(source, color_dictionary, price_dict, weight_dict, predictio
 
                 # draw the bounding box of the instance on the image
                 color = [int(c) for c in color]
-                cv2.rectangle(price_clone, (startX, startY), (endX, endY), color, 2)
+                cv2.rectangle(price_clone, (startX, startY), (endX, endY), color, 1)
 
                 # draw the predicted label and associated probability of the
                 # instance segmentation on the image
                 text = "{}: {:.4f}".format(LABELS[classID], confidence)
-                cv2.putText(price_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                cv2.putText(price_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
                 # Weight view
                 color = np.array([0,0,255])
                 avgWt = weight_dict[name]
@@ -169,7 +169,7 @@ def maskImageHelper(source, color_dictionary, price_dict, weight_dict, predictio
                 # draw the predicted label and associated probability of the
                 # instance segmentation on the image
                 text = "{}: {:.4f}".format(LABELS[classID], confidence)
-                cv2.putText(weight_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                cv2.putText(weight_clone, text, (startX, startY - 5),cv2.FONT_HERSHEY_SIMPLEX, 2, color, 4)
 
             # show the output image
     #cv2.imshow("Output", clone)
