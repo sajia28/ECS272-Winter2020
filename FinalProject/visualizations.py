@@ -39,6 +39,9 @@ class scatter_plot_histogram:
             avg_weight_list.append(avg_weight)
             size_list.append(freqs[index] * 10)
 
+        widget1.clear()
+        widget2.clear()
+        
         # creates the scatter plot
         self.plot_points = pg.ScatterPlotItem(avg_weight_list, avg_price_list, size=size_list,
                                               pen=pg.mkPen(width=1, color=(0, 0, 0)), data=names,
