@@ -300,14 +300,22 @@ class bar_chart(QtWidgets.QWidget):
         point = points_list[0]
         print (point)
 
-class alluvial_diagram:
+class alluvial_diagram(QtWidgets.QWidget):
+
     def __init__(self,parent=None):
+
+        QtWidgets.QWidget.__init__(self, parent)
+
+        self.grid = QtWidgets.QGridLayout()
         self.paid_disp_df = dataset.copy()
         self.free_disp_df = dataset.copy()
         self.paid_disp_df = self.paid_disp_df.groupby(['category','paid_disposal']).count()
         self.paid_disp_df.reset_index(inplace=True)
         self.free_disp_df = self.free_disp_df.groupby(['category','free_disposal']).count()
         self.free_disp_df.reset_index(inplace=True)
+        self.diagram = self.make_alluvial()
+        self.grid.addWidget(self.diagram, 0, 0)
+        self.setLayout(self.grid)
 
     def get_flow_values(self,disposal_list,flag):
         flow_list = []
@@ -328,12 +336,15 @@ class alluvial_diagram:
             #print(flow_list)
         return flow_list
 
-    def make_alluvial(self,categories,free_disp_methods,paid_disp_methods):
+    def make_alluvial(self):
         #sankey_df['cc'] = sankey_df['paid_disposal'].str.contains("curbside collection")
         #sankey_df = sankey_df.groupby(['category','cc']).sum()
         #sankey_df.reset_index(inplace=True)
         #sankey_df = sankey_df[sankey_df.cc == True]
         #print(sankey_df)
+        categories = ['electronics','furniture','sports']
+        free_disp_methods = ['donation']
+        paid_disp_methods = ['curbside collection']
         flow_values_list = self.get_flow_values(free_disp_methods,"f")
         flow_values_list.extend(self.get_flow_values(paid_disp_methods,"p"))
 
@@ -388,7 +399,7 @@ if __name__ == '__main__':
     #mw.resize(900, 600)
     #mw.show()
     test = alluvial_diagram()
-    fig_view = test.make_alluvial(['electronics','furniture','sports'],['donation'],['curbside collection'])
+    fig_view = test.make_alluvial()
     #mw.setCentralWidget(test)
 
     app.exec_()  # Start QApplication event loop ***

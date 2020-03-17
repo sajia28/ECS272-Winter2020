@@ -6,9 +6,10 @@ import random
 import math
 import string
 from pyqtgraph.Qt import QtWidgets, QtGui, QtCore
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 import pyqtgraph as pg
 from AdditionalWidgets import FileEntry, RangeSlider
-from visualizations import scatter_plot_histogram, bar_chart
+from visualizations import scatter_plot_histogram, bar_chart, alluvial_diagram
 from shutil import copyfile
 from maskImage import maskImage
 
@@ -169,11 +170,12 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.vis_combobox = QtWidgets.QComboBox()
 		self.populate_vis_combobox()
 		self.analysis_category_tree = QtWidgets.QTreeWidget()
-		self.analysis_image = QtWidgets.QLabel()
+		self.alluvial_diagram = alluvial_diagram()
 		self.view_widget = pg.GraphicsLayoutWidget()
 		self.bar_chart = bar_chart()
+		self.analysis_placeholder = QtWidgets.QLabel()
 		analysis_pixmap = QtGui.QPixmap(os.path.join('images', 'placeholder.jpg'))
-		self.analysis_image.setPixmap(analysis_pixmap.scaled(480, 360))
+		self.analysis_placeholder.setPixmap(analysis_pixmap.scaled(480, 360))
 		self.reset_visualization_button = QtWidgets.QPushButton('Reset')
 		# Populate
 		self.populate_tree_widget(self.analysis_category_tree)
@@ -182,7 +184,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.w2 = self.view_widget.addPlot(1, 0)
 		# Add analysis widgets to grid
 		self.analysis_grid.addWidget(self.analysis_title, 0, 0)
-		self.analysis_grid.addWidget(self.analysis_image, 1, 0, 2, 3)
+		self.analysis_grid.addWidget(self.analysis_placeholder, 1, 0, 2, 3)
+		self.analysis_grid.addWidget(self.alluvial_diagram, 1, 0, 2, 3)
 		self.analysis_grid.addWidget(self.view_widget, 1, 0, 2, 3)
 		self.analysis_grid.addWidget(self.bar_chart, 1, 0, 2, 3)
 		self.analysis_grid.addWidget(self.vis_combobox, 1, 5)
@@ -329,6 +332,10 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.set_view_pixmap(cat_pixmap)
 
 	def change_vis(self):
+		self.analysis_placeholder.hide()
+		self.alluvial_diagram.hide()
+		self.bar_chart.hide()
+		self.view_widget.hide()
 		# Find out what is checked
 		supported_labels = []
 		for item in self.analysis_category_tree.findItems("", QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive):
@@ -345,7 +352,6 @@ class MainWindow(QtWidgets.QMainWindow):
 				item_frequency[individual_items.index(item)] += 1
 		# Create the value-weight scatterplot
 		if str(self.vis_combobox.currentText()) == 'Value-Weight Scatterplot':
-			self.analysis_image.hide()
 			individual_items = []
 			item_frequency = []
 			for item in self.items:
@@ -354,21 +360,19 @@ class MainWindow(QtWidgets.QMainWindow):
 					item_frequency.append(1)
 				else:
 					item_frequency[individual_items.index(item)] += 1
-			self.bar_chart.hide()
 			self.view_widget.show()
 			self.scatter = scatter_plot_histogram(self.w1, self.w2, individual_items, item_frequency)
 		# Create value barchart
 		if str(self.vis_combobox.currentText()) == 'Value Barchart':
-			self.analysis_image.hide()
 			self.bar_chart.show()
-			self.view_widget.hide()
 			self.bar_chart.populate(individual_items, item_frequency, value=True)
 		# Create weight barchart
 		if str(self.vis_combobox.currentText()) == 'Weight Barchart':
-			self.analysis_image.hide()
 			self.bar_chart.show()
-			self.view_widget.hide()
 			self.bar_chart.populate(individual_items, item_frequency, value=False)
+		# Create alluvial diagram
+		else:
+			self.alluvial_diagram.show()
 
 
 '''Launches MainWindow object'''
