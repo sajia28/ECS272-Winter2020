@@ -57,7 +57,6 @@ class scatter_plot_histogram:
         # adds embedded interactions
         self.plot_points.scene().sigMouseMoved.connect(self.onMove)
         self.plot_points.sigClicked.connect(self.onClick)
-        print('connect')
         self.selected_point = None
 
         # creates the histogram
@@ -293,12 +292,8 @@ class bar_chart(QtWidgets.QWidget):
 
         self.grid.addWidget(self.chartView, 0, 0)
 
-    def mouseClickEvent(self, event):
-        print("clicked")
-
     def onClick(self, _, points_list):
         point = points_list[0]
-        print (point)
 
 class alluvial_diagram(QtWidgets.QWidget):
 
@@ -350,19 +345,14 @@ class alluvial_diagram(QtWidgets.QWidget):
         flow_values_list.extend(self.get_flow_values(paid_disp_methods,"p"))
 
         source_list = list(np.tile(np.arange(0,len(categories),1),len(free_disp_methods)+len(paid_disp_methods)))
-        print(source_list)
-        print(flow_values_list)
         target_list = [*range(len(categories),len(categories)+len(free_disp_methods)+len(paid_disp_methods),1)]
         target_list = [ele for ele in target_list for i in range(len(categories))]
-        print(target_list)
         labels = categories.copy()
         labels.extend(free_disp_methods)
         labels.extend(paid_disp_methods)
-        print(labels)
         colors = ['blue']*len(categories)
         colors.extend(['pink']*len(free_disp_methods))
         colors.extend(['orange']*len(paid_disp_methods))
-        print(colors)
         fig = go.Figure(data=[go.Sankey(
         node=dict(
             pad=15,
