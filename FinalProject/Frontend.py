@@ -138,6 +138,7 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.view_changer.addButton(self.category_button)
 		self.view_changer.addButton(self.value_button)
 		self.view_changer.addButton(self.weight_button)
+		self.category_button.setChecked(True)
 		self.category_tree = QtWidgets.QTreeWidget()
 		self.refresh_button = QtWidgets.QPushButton("Refresh")
 		# Populate
